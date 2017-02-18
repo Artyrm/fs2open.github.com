@@ -35,6 +35,8 @@ TARGET_LINK_LIBRARIES(code PUBLIC compiler)
 
 target_link_libraries(code PUBLIC md5)
 
+target_link_libraries(code PUBLIC libRocket)
+
 IF (FSO_USE_SPEECH)
 	find_package(Speech REQUIRED)
 	target_link_libraries(code PUBLIC speech)

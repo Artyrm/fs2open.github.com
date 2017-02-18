@@ -861,3 +861,33 @@ void opengl_tnl_set_material_movie(movie_material* material_info) {
 void gr_opengl_set_viewport(int x, int y, int width, int height) {
 	glViewport(x, y, width, height);
 }
+
+void opengl_tnl_set_rocketui_material(interface_material* material_info) {
+	vec3d offset = vmd_zero_vector;
+	offset.xyz.x = material_info->get_offset().x;
+	offset.xyz.y = material_info->get_offset().y;
+
+	matrix4 modelViewMatrix;
+	vm_matrix4_set_transform(&modelViewMatrix, &vmd_identity_matrix, &offset);
+
+	opengl_tnl_set_material(material_info, false);
+
+	Current_shader->program->Uniforms.setUniformMatrix4f("modelViewMatrix", modelViewMatrix);
+	Current_shader->program->Uniforms.setUniformMatrix4f("projMatrix", gr_projection_matrix);
+
+	Current_shader->program->Uniforms.setUniformi("textured", material_info->is_textured() ? GL_TRUE : GL_FALSE);
+	Current_shader->program->Uniforms.setUniformi("baseMap", 0);
+
+	if (material_info->is_textured()) {
+		float u_scale, v_scale;
+		uint32_t array_index;
+		if (!gr_opengl_tcache_set(material_info->get_texture_map(TM_BASE_TYPE),
+								  material_info->get_texture_type(),
+								  &u_scale,
+								  &v_scale,
+								  &array_index)) {
+			mprintf(("WARNING: Error setting bitmap texture (%i)!\n", material_info->get_texture_map(TM_BASE_TYPE)));
+		}
+		Current_shader->program->Uniforms.setUniformi("baseMapIndex", array_index);
+	}
+}

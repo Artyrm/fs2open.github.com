@@ -175,9 +175,6 @@ private:
 	//Internal Lua helper functions
 	void EndLuaFrame();
 
-	//Destroy everything
-	void Clear();
-
 public:
 	//***Init/Deinit
 	script_state(const char *name);
@@ -186,6 +183,11 @@ public:
 	script_state& operator=(script_state &i) = delete;
 
 	~script_state();
+
+	/**
+	 * @brief Resets the lua state and frees all resources
+	 */
+	void Clear();
 
 	//***Internal scripting stuff
 	int LoadBm(char *name);

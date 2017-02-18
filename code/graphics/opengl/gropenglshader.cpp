@@ -112,6 +112,8 @@ static opengl_shader_type_t GL_shader_types[] = {
 	{ SDR_TYPE_DEFAULT_MATERIAL, "passthrough-v.sdr", "default-material-f.sdr", 0,
 		{ opengl_vert_attrib::POSITION, opengl_vert_attrib::TEXCOORD, opengl_vert_attrib::COLOR }, "Default material" },
 
+	{ SDR_TYPE_ROCKET_UI, "rocketui-v.sdr",	"rocketui-f.sdr", nullptr,
+		{ opengl_vert_attrib::POSITION, opengl_vert_attrib::COLOR, opengl_vert_attrib::TEXCOORD }, "libRocket UI" }
 };
 
 /**

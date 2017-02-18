@@ -1175,6 +1175,7 @@ void opengl_setup_function_pointers()
 	gr_screen.gf_render_primitives_batched	= gr_opengl_render_primitives_batched;
 	gr_screen.gf_render_primitives_distortion = gr_opengl_render_primitives_distortion;
 	gr_screen.gf_render_movie = gr_opengl_render_movie;
+	gr_screen.gf_render_rocket_primitives = gr_opengl_render_rocket_primitives;
 
 	gr_screen.gf_is_capable = gr_opengl_is_capable;
 	gr_screen.gf_get_property = gr_opengl_get_property;

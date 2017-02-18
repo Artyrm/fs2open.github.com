@@ -168,6 +168,7 @@
 #include "weapon/shockwave.h"
 #include "weapon/weapon.h"
 #include "tracing/Monitor.h"
+#include "scpui/rocket_ui.h"
 
 #include "SDLGraphicsOperations.h"
 
@@ -1982,6 +1983,9 @@ void game_init()
 
 	Viewer_mode = 0;
 	Game_paused = 0;
+
+	// Do this before the initial scripting hook runs in case that hook does something with the UI
+	scpui::initialize();
 
 	Script_system.RunCondition(CHA_GAMEINIT);
 
@@ -6816,6 +6820,16 @@ void game_shutdown(void)
 		gr_clear();
 		gr_flip();
 	}
+
+	// Free the scripting resources of the new UI first
+	scpui::shutdown_scripting();
+
+	// Everything after this should be done without scripting so we can free those resources here
+	Script_system.Clear();
+
+	// Deinitialize the new UI system, needs to be done after scripting shutdown to make sure the resources were released
+	// properly
+	scpui::shutdown();
 
    // if the player has left the "player select" screen and quit the game without actually choosing
 	// a player, Player will be NULL, in which case we shouldn't write the player file out!

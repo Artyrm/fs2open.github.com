@@ -81,3 +81,29 @@ TEST_F(CFileTest, list_files_in_vps_and_dirs) {
 	ASSERT_STREQ("dir", table_files[0].c_str());
 	ASSERT_STREQ("dir2", table_files[1].c_str());
 }
+
+TEST_F(CFileTest, test_get_path_type) {
+	SCP_string cfile_dir(TEST_DATA_PATH);
+	cfile_dir += DIR_SEPARATOR_CHAR;
+	cfile_dir += "test"; // Cfile expects something after the path
+
+	ASSERT_FALSE(cfile_init(cfile_dir.c_str()));
+
+	// Test simple case
+	ASSERT_EQ(CF_TYPE_DATA, cfile_get_path_type("data"));
+	ASSERT_EQ(CF_TYPE_DATA, cfile_get_path_type("///data"));
+	ASSERT_EQ(CF_TYPE_DATA, cfile_get_path_type("data\\\\\\"));
+	ASSERT_EQ(CF_TYPE_DATA, cfile_get_path_type("////data\\\\\\"));
+
+	// Test single subdirectory case
+	ASSERT_EQ(CF_TYPE_INTERFACE, cfile_get_path_type("data/interface"));
+	ASSERT_EQ(CF_TYPE_INTERFACE, cfile_get_path_type("///data/interface"));
+	ASSERT_EQ(CF_TYPE_INTERFACE, cfile_get_path_type("data/interface\\\\\\"));
+	ASSERT_EQ(CF_TYPE_INTERFACE, cfile_get_path_type("////data/interface\\\\\\"));
+
+	// Test nested subdirectory case
+	ASSERT_EQ(CF_TYPE_INTERFACE_MARKUP, cfile_get_path_type("data/interface/markup"));
+	ASSERT_EQ(CF_TYPE_INTERFACE_MARKUP, cfile_get_path_type("///data/interface/markup"));
+	ASSERT_EQ(CF_TYPE_INTERFACE_MARKUP, cfile_get_path_type("data/interface/markup\\\\\\"));
+	ASSERT_EQ(CF_TYPE_INTERFACE_MARKUP, cfile_get_path_type("////data/interface/markup\\\\\\"));
+}

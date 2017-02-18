@@ -79,8 +79,10 @@ typedef struct {
 #define CF_TYPE_SCRIPTS				35
 #define CF_TYPE_FICTION				36
 #define CF_TYPE_FREDDOCS			37
+#define CF_TYPE_INTERFACE_MARKUP	38
+#define CF_TYPE_INTERFACE_CSS		39
 
-#define CF_MAX_PATH_TYPES			38			// Can be as high as you'd like //DTP; yeah but beware alot of things uses CF_MAX_PATH_TYPES
+#define CF_MAX_PATH_TYPES			40			// Can be as high as you'd like //DTP; yeah but beware alot of things uses CF_MAX_PATH_TYPES
 
 
 // TRUE if type is specified and valid
@@ -354,6 +356,8 @@ int cfile_push_chdir(int type);
 
 // restore directory on top of the stack
 int cfile_pop_dir();
+
+int cfile_get_path_type(const SCP_string& dir);
 
 namespace cfile
 {
