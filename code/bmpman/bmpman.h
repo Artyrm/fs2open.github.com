@@ -718,4 +718,30 @@ bool bm_is_texture_array(const int handle);
  */
 int bm_get_base_frame(const int handle, int* num_frames = nullptr);
 
+/**
+ * @brief Get the array index of the specified bitmap
+ *
+ * This should be used when passing the array index to the GPU (e.g. when building uniform structs or streaming particle
+ * data)
+ *
+ * @param handle The handle of the bitmap
+ * @return The index into the array
+ */
+int bm_get_array_index(const int handle);
+
+/**
+ * @brief Checks if the given filename is a valid effect or texture file name
+ *
+ * @note At least one of @c single_frame or @c animation must be true since the result would make no sense otherwise. It
+ * is also valid to set both parmeters to @c true.
+ *
+ * @todo This currently just tries to load the file but could be improved by not actually loading the file in the future.
+ *
+ * @param file The file name to check
+ * @param single_frame If set to @c true then single frames are valid files
+ * @param animation If set to @c true then animations are valid files
+ * @return @c true if the file name is valid, @c false otherwise
+ */
+bool bm_validate_filename(const SCP_string& file, bool single_frame, bool animation);
+
 #endif

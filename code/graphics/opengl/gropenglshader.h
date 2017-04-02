@@ -36,6 +36,7 @@ struct opengl_vert_attrib {
 		MODEL_ID,
 		RADIUS,
 		UVEC,
+		WORLD_MATRIX,
 		NUM_ATTRIBS
 	};
 

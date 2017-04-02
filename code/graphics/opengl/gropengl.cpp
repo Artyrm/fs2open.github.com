@@ -1173,6 +1173,7 @@ void opengl_setup_function_pointers()
 	gr_screen.gf_render_primitives_batched	= gr_opengl_render_primitives_batched;
 	gr_screen.gf_render_primitives_distortion = gr_opengl_render_primitives_distortion;
 	gr_screen.gf_render_movie = gr_opengl_render_movie;
+	gr_screen.gf_render_decals = gr_opengl_render_decals;
 
 	gr_screen.gf_is_capable = gr_opengl_is_capable;
 	gr_screen.gf_get_property = gr_opengl_get_property;
@@ -1575,6 +1576,9 @@ bool gr_opengl_get_property(gr_property prop, void* dest) {
 	switch(prop) {
 		case gr_property::UNIFORM_BUFFER_OFFSET_ALIGNMENT:
 			*((int*)dest) = GL_state.Constants.GetUniformBufferOffsetAlignment();
+			return true;
+		case gr_property::UNIFORM_BUFFER_MAX_SIZE:
+			*((int*)dest) = GL_state.Constants.GetMaxUniformBlockSize();
 			return true;
 		default:
 			return false;

@@ -57,7 +57,7 @@ public:
 	virtual uint get_shader_flags();
 
 	void set_texture_map(int tex_type, int texture_num);
-	int get_texture_map(int tex_type);
+	int get_texture_map(int tex_type) const;
 	bool is_textured();
 
 	void set_texture_type(texture_type t_type);
@@ -239,7 +239,25 @@ class batched_bitmap_material : public material
 	batched_bitmap_material();
 };
 
-gr_alpha_blend material_determine_blend_mode(int base_bitmap, bool is_transparent);
+class decal_material : public material
+{
+ public:
+	decal_material();
+
+	uint get_shader_flags() override;
+};
+
+/**
+ * @brief Determines the blend mode required with the given bitmap
+ *
+ * If @c require_alpha is set then the shader requires the usage of the alpha channel
+ *
+ * @param base_bitmap
+ * @param is_transparent
+ * @param require_alpha
+ * @return
+ */
+gr_alpha_blend material_determine_blend_mode(int base_bitmap, bool is_transparent, bool require_alpha = false);
 gr_zbuffer_type material_determine_depth_mode(bool depth_testing, bool is_transparent);
 
 void material_set_interface(material* mat_info, int texture, bool blended, float alpha);
@@ -251,5 +269,6 @@ void material_set_unlit_volume(particle_material* mat_info, int texture, bool po
 void material_set_distortion(distortion_material *mat_info, int texture, bool thruster);
 void material_set_movie(movie_material *mat_info, int y_bm, int u_bm, int v_bm);
 void material_set_batched_bitmap(batched_bitmap_material* mat_info, int base_tex, float alpha, float color_scale);
+void material_set_decal(material* mat_info, int diffuse_tex, int normal_tex);
 
 #endif

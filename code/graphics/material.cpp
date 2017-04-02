@@ -5,14 +5,14 @@
 #include "globalincs/systemvars.h"
 #include "cmdline/cmdline.h"
 
-gr_alpha_blend material_determine_blend_mode(int base_bitmap, bool blending)
+gr_alpha_blend material_determine_blend_mode(int base_bitmap, bool blending, bool require_alpha)
 {
 	if ( blending ) {
 		if ( base_bitmap >= 0 && bm_has_alpha_channel(base_bitmap) ) {
 			return ALPHA_BLEND_ALPHA_BLEND_ALPHA;
 		}
 
-		return ALPHA_BLEND_ADDITIVE;
+		return require_alpha ? ALPHA_BLEND_ALPHA_ADDITIVE : ALPHA_BLEND_ADDITIVE;
 	}
 
 	return ALPHA_BLEND_ALPHA_BLEND_ALPHA;
@@ -143,6 +143,18 @@ void material_set_batched_bitmap(batched_bitmap_material* mat_info, int base_tex
 
 	mat_info->set_color_scale(color_scale);
 }
+void material_set_decal(material* mat_info, int diffuse_tex, int normal_tex) {
+	mat_info->set_depth_mode(ZBUFFER_TYPE_READ);
+
+	// TODO: This blend mode is not correct for normal blending!! If decal normal mapping is added then the normal buffer
+	// needs to use a different blending equation.
+	mat_info->set_blend_mode(material_determine_blend_mode(diffuse_tex, true));
+	mat_info->set_blend_mode(ALPHA_BLEND_ALPHA_ADDITIVE);
+
+	mat_info->set_texture_map(TM_BASE_TYPE, diffuse_tex);
+	mat_info->set_texture_map(TM_NORMAL_TYPE, normal_tex);
+	mat_info->set_cull_mode(false);
+}
 
 material::material():
 Sdr_type(SDR_TYPE_DEFAULT_MATERIAL),
@@ -203,7 +215,7 @@ void material::set_texture_map(int tex_type, int texture_num)
 	Texture_maps[tex_type] = texture_num;
 }
 
-int material::get_texture_map(int tex_type)
+int material::get_texture_map(int tex_type) const
 {
 	Assert(tex_type > -1 && tex_type < TM_NUM_TYPES);
 
@@ -765,4 +777,18 @@ void movie_material::setVtex(int _Vtex) {
 
 batched_bitmap_material::batched_bitmap_material() {
 	set_shader_type(SDR_TYPE_BATCHED_BITMAP);
+}
+
+decal_material::decal_material() {
+	set_shader_type(SDR_TYPE_DECAL);
+}
+uint decal_material::get_shader_flags() {
+	uint flags = 0;
+
+	if (get_texture_map(TM_NORMAL_TYPE) == -1) {
+		// If we don't write to the normal map then we can use the existing normal map for better normal accuracy
+		flags |= SDR_FLAG_DECAL_USE_NORMAL_MAP;
+	}
+
+	return flags;
 }

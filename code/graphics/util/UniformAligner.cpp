@@ -29,10 +29,10 @@ UniformAligner::UniformAligner(size_t dataSize, size_t headerSize) :
 	resize(0);
 }
 void UniformAligner::setAlignment(size_t align) {
+	_requiredAlignment = align;
+
 	// Clear the buffer since changing the alignment invalidates the stored data
 	clear();
-
-	_requiredAlignment = align;
 }
 void UniformAligner::resize(size_t num_elements) {
 	size_t final_size =
@@ -79,6 +79,9 @@ void* UniformAligner::getData() {
 }
 void UniformAligner::clear() {
 	resize(0);
+}
+size_t UniformAligner::getCurrentOffset() {
+	return getOffset(getNumElements() - 1);
 }
 }
 }

@@ -44,7 +44,7 @@ class UniformAligner {
 
 	template<typename THeader>
 	THeader* getHeader() {
-		static_assert(sizeof(THeader) == _headerSize, "Header size does not match requested header type!");
+		Assertion(sizeof(THeader) == _headerSize, "Header size does not match requested header type!");
 
 		return reinterpret_cast<THeader*>(_buffer.data());
 	}
@@ -60,6 +60,12 @@ class UniformAligner {
 	}
 
 	size_t getOffset(size_t index);
+
+	/**
+	 * @brief Gets the offset of the last element in the aligner
+	 * @return The offset in bytes
+	 */
+	size_t getCurrentOffset();
 
 	template<typename T>
 	T* nextTypedElement(T* currentEl) {

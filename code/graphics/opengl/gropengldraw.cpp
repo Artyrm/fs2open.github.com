@@ -55,19 +55,20 @@ GLfloat Scene_texture_v_scale = 1.0f;
 
 static opengl_vertex_bind GL_array_binding_data[] =
 {
-	{ vertex_format_data::POSITION4,	4, GL_FLOAT,			GL_FALSE, opengl_vert_attrib::POSITION	},
-	{ vertex_format_data::POSITION3,	3, GL_FLOAT,			GL_FALSE, opengl_vert_attrib::POSITION	},
-	{ vertex_format_data::POSITION2,	2, GL_FLOAT,			GL_FALSE, opengl_vert_attrib::POSITION	},
-	{ vertex_format_data::SCREEN_POS,	2, GL_INT,				GL_FALSE, opengl_vert_attrib::POSITION	},
-	{ vertex_format_data::COLOR3,		3, GL_UNSIGNED_BYTE,	GL_TRUE,opengl_vert_attrib::COLOR		},
-	{ vertex_format_data::COLOR4,		4, GL_UNSIGNED_BYTE,	GL_TRUE, opengl_vert_attrib::COLOR		},
-	{ vertex_format_data::TEX_COORD2,	2, GL_FLOAT,			GL_FALSE, opengl_vert_attrib::TEXCOORD	},
-	{ vertex_format_data::TEX_COORD3,	3, GL_FLOAT,			GL_FALSE, opengl_vert_attrib::TEXCOORD	},
-	{ vertex_format_data::NORMAL,		3, GL_FLOAT,			GL_FALSE, opengl_vert_attrib::NORMAL	},
-	{ vertex_format_data::TANGENT,		4, GL_FLOAT,			GL_FALSE, opengl_vert_attrib::TANGENT	},
-	{ vertex_format_data::MODEL_ID,		1, GL_FLOAT,			GL_FALSE, opengl_vert_attrib::MODEL_ID	},
-	{ vertex_format_data::RADIUS,		1, GL_FLOAT,			GL_FALSE, opengl_vert_attrib::RADIUS	},
-	{ vertex_format_data::UVEC,			3, GL_FLOAT,			GL_FALSE, opengl_vert_attrib::UVEC		},
+	{ vertex_format_data::POSITION4,	4, GL_FLOAT,			GL_FALSE,	1, opengl_vert_attrib::POSITION	},
+	{ vertex_format_data::POSITION3,	3, GL_FLOAT,			GL_FALSE,	1, opengl_vert_attrib::POSITION	},
+	{ vertex_format_data::POSITION2,	2, GL_FLOAT,			GL_FALSE,	1, opengl_vert_attrib::POSITION	},
+	{ vertex_format_data::SCREEN_POS,	2, GL_INT,				GL_FALSE,	1, opengl_vert_attrib::POSITION	},
+	{ vertex_format_data::COLOR3,		3, GL_UNSIGNED_BYTE,	GL_TRUE,	1, opengl_vert_attrib::COLOR	},
+	{ vertex_format_data::COLOR4,		4, GL_UNSIGNED_BYTE,	GL_TRUE, 	1, opengl_vert_attrib::COLOR	},
+	{ vertex_format_data::TEX_COORD2,	2, GL_FLOAT,			GL_FALSE,	1, opengl_vert_attrib::TEXCOORD	},
+	{ vertex_format_data::TEX_COORD3,	3, GL_FLOAT,			GL_FALSE,	1, opengl_vert_attrib::TEXCOORD	},
+	{ vertex_format_data::NORMAL,		3, GL_FLOAT,			GL_FALSE,	1, opengl_vert_attrib::NORMAL	},
+	{ vertex_format_data::TANGENT,		4, GL_FLOAT,			GL_FALSE,	1, opengl_vert_attrib::TANGENT	},
+	{ vertex_format_data::MODEL_ID,		1, GL_FLOAT,			GL_FALSE,	1, opengl_vert_attrib::MODEL_ID	},
+	{ vertex_format_data::RADIUS,		1, GL_FLOAT,			GL_FALSE,	1, opengl_vert_attrib::RADIUS	},
+	{ vertex_format_data::UVEC,			3, GL_FLOAT,			GL_FALSE,	1, opengl_vert_attrib::UVEC		},
+	{ vertex_format_data::WORLD_MATRIX,	3, GL_FLOAT,			GL_FALSE,	4, opengl_vert_attrib::WORLD_MATRIX},
 };
 
 inline GLenum opengl_primitive_type(primitive_type prim_type)
@@ -893,4 +894,34 @@ void opengl_draw_textured_quad(GLfloat x1,
 	vert_def.add_vertex_component(vertex_format_data::TEX_COORD2, sizeof(GLfloat) * 4, sizeof(GLfloat) * 2);
 
 	opengl_render_primitives_immediate(PRIM_TYPE_TRISTRIP, &vert_def, 4, glVertices, sizeof(GLfloat) * 4 * 4);
+}
+
+void gr_opengl_render_decals(decal_material* material_info,
+							 primitive_type prim_type,
+							 vertex_layout* layout,
+							 int num_elements,
+							 const indexed_vertex_source& binding) {
+	opengl_tnl_set_material_decal(material_info);
+
+	opengl_bind_buffer_object(binding.Ibuffer_handle);
+	opengl_bind_buffer_object(binding.Vbuffer_handle);
+
+	opengl_bind_vertex_layout(*layout);
+
+	// For now we only render into the diffuse channel of the framebuffer
+	GLenum buffers[] = {
+		GL_COLOR_ATTACHMENT0
+	};
+	glDrawBuffers(2, buffers);
+
+	glDrawElements(opengl_primitive_type(prim_type), num_elements, GL_UNSIGNED_INT, nullptr);
+
+	// TODO: Optimize this so it's only done once instead of every time a decal is rendered
+	GLenum buffers2[] = {
+		GL_COLOR_ATTACHMENT0,
+		GL_COLOR_ATTACHMENT1,
+		GL_COLOR_ATTACHMENT2,
+		GL_COLOR_ATTACHMENT3
+	};
+	glDrawBuffers(2, buffers2);
 }

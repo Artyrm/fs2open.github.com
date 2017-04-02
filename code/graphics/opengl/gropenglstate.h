@@ -110,6 +110,8 @@ struct opengl_vertex_attrib_unit
 
 	bool reset_ptr;
 	bool used_for_draw;
+
+	GLuint divisor = 0;
 };
 
 class opengl_array_state

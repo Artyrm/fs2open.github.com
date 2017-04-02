@@ -46,6 +46,7 @@ class distortion_material;
 class shield_material;
 class movie_material;
 class batched_bitmap_material;
+class decal_material;
 
 class transform_stack {
 
@@ -151,6 +152,7 @@ enum shader_type {
 	SDR_TYPE_SHIELD_DECAL,
 	SDR_TYPE_BATCHED_BITMAP,
 	SDR_TYPE_DEFAULT_MATERIAL,
+	SDR_TYPE_DECAL,
 	NUM_SHADER_TYPES
 };
 
@@ -183,8 +185,12 @@ enum shader_type {
 #define SDR_FLAG_BLUR_HORIZONTAL			(1<<0)
 #define SDR_FLAG_BLUR_VERTICAL				(1<<1)
 
+#define SDR_FLAG_DECAL_USE_NORMAL_MAP (1<<0)
+
 enum class uniform_block_type {
 	Lights = 0,
+	DecalInfo,
+	DecalGlobals,
 
 	NUM_BLOCK_TYPES
 };
@@ -205,14 +211,16 @@ struct vertex_format_data
 		MODEL_ID,
 		RADIUS,
 		UVEC,
+		WORLD_MATRIX,
 	};
 
 	vertex_format format_type;
 	size_t stride;
 	size_t offset;
+	bool instanced;
 
-	vertex_format_data(vertex_format i_format_type, size_t i_stride, size_t i_offset) :
-	format_type(i_format_type), stride(i_stride), offset(i_offset) {}
+	vertex_format_data(vertex_format i_format_type, size_t i_stride, size_t i_offset, bool i_instanced) :
+	format_type(i_format_type), stride(i_stride), offset(i_offset), instanced(i_instanced) {}
 
 	static inline uint mask(vertex_format v_format) { return 1 << v_format; }
 };
@@ -234,7 +242,7 @@ public:
 		return ( Vertex_mask & vertex_format_data::mask(format_type) ) ? true : false; 
 	} 
 
-	void add_vertex_component(vertex_format_data::vertex_format format_type, size_t stride, size_t offset)
+	void add_vertex_component(vertex_format_data::vertex_format format_type, size_t stride, size_t offset, bool instanced = false)
 	{
 		if ( resident_vertex_format(format_type) ) {
 			// we already have a vertex component of this format type
@@ -242,7 +250,7 @@ public:
 		}
 
 		Vertex_mask |= (1 << format_type);
-		Vertex_components.push_back(vertex_format_data(format_type, stride, offset));
+		Vertex_components.push_back(vertex_format_data(format_type, stride, offset, instanced));
 	}
 };
 
@@ -261,7 +269,8 @@ typedef enum gr_capability {
 } gr_capability;
 
 enum class gr_property {
-	UNIFORM_BUFFER_OFFSET_ALIGNMENT
+	UNIFORM_BUFFER_OFFSET_ALIGNMENT,
+	UNIFORM_BUFFER_MAX_SIZE,
 };
 
 // stencil buffering stuff
@@ -754,6 +763,7 @@ typedef struct screen {
 	void (*gf_render_primitives_2d)(material* material_info, primitive_type prim_type, vertex_layout* layout, int offset, int n_verts, int buffer_handle);
 	void (*gf_render_movie)(movie_material* material_info, primitive_type prim_type, vertex_layout* layout, int n_verts, int buffer);
 	void (*gf_render_primitives_batched)(batched_bitmap_material* material_info, primitive_type prim_type, vertex_layout* layout, int offset, int n_verts, int buffer_handle);
+	void (*gf_render_decals)(decal_material* material_info, primitive_type prim_type, vertex_layout* layout, int num_elements, const indexed_vertex_source& buffers);
 
 	bool (*gf_is_capable)(gr_capability capability);
 	bool (*gf_get_property)(gr_property property, void* destination);

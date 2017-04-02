@@ -41,6 +41,7 @@ opengl_vert_attrib GL_vertex_attrib_info[] =
 		{ opengl_vert_attrib::MODEL_ID,		"vertModelID",		{{{ 0.0f, 0.0f, 0.0f, 0.0f }}} },
 		{ opengl_vert_attrib::RADIUS,		"vertRadius",		{{{ 1.0f, 0.0f, 0.0f, 0.0f }}} },
 		{ opengl_vert_attrib::UVEC,			"vertUvec",			{{{ 0.0f, 1.0f, 0.0f, 0.0f }}} },
+		{ opengl_vert_attrib::WORLD_MATRIX,	"vertWorldMatrix",	{{{ 1.0f, 0.0f, 0.0f, 0.0f }}} },
 	};
 
 struct opengl_uniform_block_binding {
@@ -49,7 +50,9 @@ struct opengl_uniform_block_binding {
 };
 
 opengl_uniform_block_binding GL_uniform_blocks[] = {
-	{ uniform_block_type::Lights, "lightData" }
+	{ uniform_block_type::Lights, "lightData" },
+	{ uniform_block_type::DecalInfo, "decalInfoData" },
+	{ uniform_block_type::DecalGlobals, "decalGlobalData" },
 };
 
 /**
@@ -111,6 +114,8 @@ static opengl_shader_type_t GL_shader_types[] = {
 	{ SDR_TYPE_DEFAULT_MATERIAL, "passthrough-v.sdr", "default-material-f.sdr", 0,
 		{ opengl_vert_attrib::POSITION, opengl_vert_attrib::TEXCOORD, opengl_vert_attrib::COLOR }, "Default material" },
 
+	{ SDR_TYPE_DECAL, "decal-v.sdr", "decal-f.sdr", nullptr,
+		{ opengl_vert_attrib::POSITION, opengl_vert_attrib::WORLD_MATRIX }, "Decal rendering" },
 };
 
 /**
@@ -212,7 +217,11 @@ static opengl_shader_variant_t GL_shader_variants[] = {
 	
 	{ SDR_TYPE_POST_PROCESS_BLUR, false, SDR_FLAG_BLUR_VERTICAL, "PASS_1", 
 		{  },
-		"Vertical blur pass" }
+		"Vertical blur pass" },
+
+	{ SDR_TYPE_DECAL, false, SDR_FLAG_DECAL_USE_NORMAL_MAP, "USE_NORMAL_MAP",
+		{  },
+		"Decal use scene normal map" },
 };
 
 static const int GL_num_shader_variants = sizeof(GL_shader_variants) / sizeof(opengl_shader_variant_t);
@@ -227,8 +236,6 @@ void opengl_shader_set_current(opengl_shader_t *shader_obj)
 {
 	if (Current_shader != shader_obj) {
 		GR_DEBUG_SCOPE("Set shader");
-
-		GL_state.Array.ResetVertexAttribs();
 
 		if(shader_obj) {
 			shader_obj->program->use();

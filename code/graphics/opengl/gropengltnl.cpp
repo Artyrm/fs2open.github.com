@@ -200,7 +200,7 @@ void gr_opengl_update_buffer_data_offset(int handle, size_t offset, size_t size,
 	opengl_buffer_object &buffer_obj = GL_buffer_objects[handle];
 
 	opengl_bind_buffer_object(handle);
-	
+
 	glBufferSubData(buffer_obj.type, offset, size, data);
 }
 
@@ -346,7 +346,7 @@ void opengl_tnl_init()
 		GL_state.Texture.SetActiveUnit(0);
 		GL_state.Texture.SetTarget(GL_TEXTURE_2D_ARRAY);
 		GL_state.Texture.Enable(Shadow_map_depth_texture);
-		
+
 		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -552,7 +552,7 @@ void gr_opengl_shadow_map_start(matrix4 *shadow_view_matrix, const matrix *light
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	gr_set_lighting(false,false);
-	
+
 	Rendering_to_shadow_map = true;
 	Glowpoint_override_save = Glowpoint_override;
 	Glowpoint_override = true;
@@ -651,7 +651,7 @@ void opengl_tnl_set_model_material(model_material *material_info)
 	if ( GL_state.CullFace() ) {
 		GL_state.FrontFaceValue(GL_CW);
 	}
-	
+
 	gr_set_center_alpha(material_info->get_center_alpha());
 
 	Assert( Current_shader->shader == SDR_TYPE_MODEL );
@@ -677,7 +677,7 @@ void opengl_tnl_set_model_material(model_material *material_info)
 	if ( Current_shader->flags & SDR_FLAG_MODEL_CLIP ) {
 		if (material_info->is_clipped()) {
 			material::clip_plane &clip_info = material_info->get_clip_plane();
-			
+
 			Current_shader->program->Uniforms.setUniformi("use_clip_plane", 1);
 
 			vec4 clip_equation;
@@ -759,7 +759,7 @@ void opengl_tnl_set_model_material(model_material *material_info)
 		uint32_t array_index = 0;
 		gr_opengl_tcache_set(material_info->get_texture_map(TM_BASE_TYPE), TCACHE_TYPE_NORMAL, &u_scale, &v_scale, &array_index, render_pass);
 		Current_shader->program->Uniforms.setUniformi("sBasemapIndex", array_index);
-		
+
 		++render_pass;
 	}
 
@@ -808,7 +808,7 @@ void opengl_tnl_set_model_material(model_material *material_info)
 			Current_shader->program->Uniforms.setUniformi("alphaGloss", 0);
 		}
 		Current_shader->program->Uniforms.setUniformi("sSpecmapIndex", array_index);
-		
+
 		++render_pass;
 
 		if ( Current_shader->flags & SDR_FLAG_MODEL_ENV_MAP ) {
@@ -938,7 +938,7 @@ void opengl_tnl_set_model_material(model_material *material_info)
 		Current_shader->program->Uniforms.setUniformf("thruster_scale", material_info->get_thrust_scale());
 	}
 
-	
+
 	if ( Current_shader->flags & SDR_FLAG_MODEL_FOG ) {
 		material::fog fog_params = material_info->get_fog();
 
@@ -1068,4 +1068,24 @@ void opengl_tnl_set_material_movie(movie_material* material_info) {
 }
 void gr_opengl_set_viewport(int x, int y, int width, int height) {
 	glViewport(x, y, width, height);
+}
+void opengl_tnl_set_material_decal(decal_material* material_info) {
+	opengl_tnl_set_material(material_info, false);
+
+	float u_scale, v_scale;
+	uint32_t array_index;
+
+	gr_opengl_tcache_set(material_info->get_texture_map(TM_BASE_TYPE), material_info->get_texture_type(), &u_scale, &v_scale, &array_index, 0);
+	Current_shader->program->Uniforms.setUniformi("diffuseMap", 0);
+
+	gr_opengl_tcache_set(material_info->get_texture_map(TM_NORMAL_TYPE), material_info->get_texture_type(), &u_scale, &v_scale, &array_index, 1);
+	Current_shader->program->Uniforms.setUniformi("normalMap", 1);
+
+	GL_state.Texture.Enable(2, GL_TEXTURE_2D, Scene_depth_texture);
+	Current_shader->program->Uniforms.setUniformi("gDepthBuffer", 2);
+
+	if (Current_shader->flags & SDR_FLAG_DECAL_USE_NORMAL_MAP) {
+		GL_state.Texture.Enable(3, GL_TEXTURE_2D, Scene_normal_texture);
+		Current_shader->program->Uniforms.setUniformi("gNormalBuffer", 3);
+	}
 }

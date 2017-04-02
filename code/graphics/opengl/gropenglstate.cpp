@@ -587,8 +587,7 @@ void opengl_array_state::VertexAttribPointer(GLuint index, GLint size, GLenum ty
 {
 	opengl_vertex_attrib_unit *va_unit = &vertex_attrib_units[index];
 
-	if ( 
-		!va_unit->reset_ptr 
+	if (!va_unit->reset_ptr
 		&& va_unit->ptr_init 
 		&& va_unit->normalized == normalized 
 		&& va_unit->pointer == pointer 
@@ -612,7 +611,6 @@ void opengl_array_state::VertexAttribPointer(GLuint index, GLint size, GLenum ty
 
 	va_unit->ptr_init = true;
 }
-
 void opengl_array_state::ResetVertexAttribs()
 {
 	SCP_map<GLuint, opengl_vertex_attrib_unit>::iterator it;
